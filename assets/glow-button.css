@@ -1,0 +1,52 @@
+/* ai-mode-glow · 鼠标跟随彩虹光晕按钮
+   用法：给元素加 class="glow-btn"（或 data-glow），再引入 glow-button.js */
+.glow-btn{
+  /* ---- 可调参数 ---- */
+  --glow-bg:#f0f2f5;          /* 按钮底色（::after 用它遮住中间） */
+  --glow-size:72px;           /* 光斑半径：越大，亮的边缘越长 */
+  --glow-blur:9px;            /* 虚化程度 */
+  --glow-spread:5px;          /* 光溢出按钮边缘的距离 */
+  --glow-duration:.35s;       /* 淡入淡出时长 */
+  --glow-colors:#4285f4,#34a853,#fbbc05,#ea4335,#4285f4;
+  /* ---- 由 JS 写入 ---- */
+  --glow-x:50%;
+  --glow-y:0%;
+
+  position:relative; isolation:isolate;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 22px; border:0; border-radius:999px;
+  background:var(--glow-bg); color:#3c4043;
+  font:500 15px/1 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  cursor:pointer;
+}
+
+/* 彩色光晕层：渐变 + 虚化 + 以鼠标为中心的遮罩 */
+.glow-btn::before{
+  content:""; position:absolute; z-index:-2; pointer-events:none;
+  inset:calc(var(--glow-spread) * -1);
+  border-radius:inherit;
+  background:conic-gradient(from 0deg, var(--glow-colors));
+  filter:blur(var(--glow-blur));
+  -webkit-mask:radial-gradient(circle var(--glow-size) at var(--glow-x) var(--glow-y),#000 30%,transparent 100%);
+          mask:radial-gradient(circle var(--glow-size) at var(--glow-x) var(--glow-y),#000 30%,transparent 100%);
+  opacity:0;
+  transition:opacity var(--glow-duration) ease;
+}
+
+/* 盖住按钮中间，只让边缘的光漏出来 */
+.glow-btn::after{
+  content:""; position:absolute; inset:0; z-index:-1;
+  border-radius:inherit; background:var(--glow-bg);
+}
+
+.glow-btn:hover::before,
+.glow-btn:focus-visible::before{ opacity:1; }
+
+/* 触屏没有 hover，不显示；减少动态效果时去掉过渡 */
+@media (hover:none){ .glow-btn::before{ display:none; } }
+@media (prefers-reduced-motion:reduce){ .glow-btn::before{ transition:none; } }
+
+/* 深色模式示例：覆盖 --glow-bg 与文字色即可 */
+@media (prefers-color-scheme:dark){
+  .glow-btn{ --glow-bg:#303134; color:#e8eaed; }
+}
